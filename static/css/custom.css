@@ -19,3 +19,51 @@ body {
   margin-top: 5px!important;
   margin-bottom: 10px!important;
 }
+
+.pannel-bottom{
+  margin-bottom: 10px !important;
+}
+
+#upload-div{
+  border: 3px dashed #cccccc;
+  height: 35px;
+  position: relative;
+  text-align: center;
+}
+
+.upload-div.clickable {
+  cursor: pointer;
+}
+
+.logo-card{
+  width: 20px;
+  display: block;
+  margin: auto;
+  margin-top: 5px;
+}
+
+.header-setting{
+  border-bottom: 1px solid #eee;
+  margin-bottom: 10px;
+}
+
+.result-panel{
+  height: 270px;
+  position: relative;
+  text-align: center;
+}
+
+.placeholder-img{
+  width: 80px;
+  display: block;
+  margin: auto;
+  margin-top: 80px;
+}
+
+.img-result{
+  height: 250px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}

@@ -1,1 +1,1 @@
-import views.home_view
+import views.detection

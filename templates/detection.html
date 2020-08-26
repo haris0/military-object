@@ -8,12 +8,43 @@
         <div class="row">
             <div class="col-md-10 col-md-offset-2">
                 <div class="panel panel-default margin">
+                    <form id="form" method=post enctype=multipart/form-data>
                     <div class="panel-body">
-                      <b class="title-size">Detect Military Object</b>
+                      <div class="row">
+                        <div class="col-lg-6 recent-div">
+                            <div class="header-setting">
+                                <b style="font-size:medium;">Detect From Image</b>
+                            </div>
+                            <p style="margin-top: -5px; margin-bottom: 0px;">Select From Computer</p>
+                            <div id="upload-div" class="upload-div clickable">
+                                <img src="{{ url_for('.static', filename = 'images/upload.png') }}" 
+                                        class="logo-card">
+                            </div>
+                            <input id="file" type=file name="file" style='display:none;'>
+                            <p style="margin-top: 5px; margin-bottom: 0px;">Select From URL</p>
+                            <div>
+                                <input type=url class="form-control" id="url" name="url_link" placeholder="http://">
+                            </div>
+                        </div>
+                        <div class="col-lg-6 recent-div">
+                            <div class="header-setting">
+                                <b style="font-size:medium;">Detect From Video</b>
+                            </div>
+                        </div>
+                      </div>
+                      <button type="submit" name="form-submit" class="btn  btn-default pull-right">Upload</button>
                     </div>
+                    </form>
                 </div>
                 <div class="panel panel-default">
-                    <div class="panel-body">
+                    <div class="panel-body result-panel">
+                        {% if out_img %}
+                        <img src="{{ url_for('.static', filename = 'detect_image/'+out_img) }}" 
+                            class="img-result">
+                        {% else %}
+                        <img src="{{ url_for('.static', filename = 'images/tank.png') }}" 
+                            class="placeholder-img">
+                        {% endif %}
                     </div>
                 </div>
             </div>
