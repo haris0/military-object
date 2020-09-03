@@ -1,7 +1,7 @@
 import sys
 from app import app
 from flask import render_template, redirect, url_for, flash, request, redirect
-from module.military_detect import yolo_detect, resize_img, get_recent_img
+from module.military_detect import yolo_detect, resize_img
 import os
 from werkzeug.utils import secure_filename
 import urllib.request
@@ -19,9 +19,13 @@ VIDEO_ALLOWED_EXTENSIONS = {'mp4', 'avi', '3gp'}
 
 ym = yolo_detect(app.config['RESULT_FOLDER_IMAGE'])
 
-def allowed_file(filename):
+def allowed_file_image(filename):
     return '.' in filename and \
         filename.rsplit('.', 1)[1].lower() in IMAGE_ALLOWED_EXTENSIONS
+
+def allowed_file_video(filename):
+    return '.' in filename and \
+        filename.rsplit('.', 1)[1].lower() in VIDEO_ALLOWED_EXTENSIONS
 
 def cleaning_upload_dic(path):
     if not os.listdir(path):
@@ -30,6 +34,24 @@ def cleaning_upload_dic(path):
         filelist = [ f for f in os.listdir(path)]
         for f in filelist:
             os.remove(os.path.join(path, f))
+
+def predict_image_videe(url):
+    filename = url.split('/')[-1]
+    if allowed_file_image(filename):
+        path = download(url)
+        resize_img(path)
+        out_path = ym.predict_image(path)
+
+    elif allowed_file_video(filename):
+        path = download(url)
+
+    return out_path
+
+def download(url):
+    filename = url.split('/')[-1]
+    path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    urllib.request.urlretrieve(url, path)
+    return path
 
 @app.route('/')
 def root():
@@ -47,27 +69,23 @@ def upload_file():
         if "form-submit" in request.form:
             print('URL')
             url = request.form['url_link']
-            filename = url.split('/')[-1]
-            path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            urllib.request.urlretrieve(url, path)
-            resize_img(path)
-            out_img = ym.predict_img(path)
+            out_img = predict_image_videe(url)
         else:
             print('Upload')
             if 'file' not in request.files:
                 print('No file part')
-                return redirect(request.url)
+                return redirect(request.url, error_msg='No File')
             file = request.files['file']
             print(file)
             if file.filename == '':
                 print('No selected file')
-                return redirect(request.url)
-            if file and allowed_file(file.filename):
+                return redirect(request.url, error_msg='No File')
+            if file and allowed_file_image(file.filename):
                 print('Run Upload')
                 filename = secure_filename(file.filename)
                 path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 file.save(path)
                 resize_img(path)
-                out_img = ym.predict_img(path)
+                out_img = ym.predict_image(path)
 
         return render_template('detection.html', title='Home', out_img=out_img)

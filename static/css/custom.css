@@ -48,16 +48,16 @@ body {
 }
 
 .result-panel{
-  height: 270px;
+  height: 275px;
   position: relative;
   text-align: center;
 }
 
 .placeholder-img{
-  width: 80px;
+  width: 100px;
   display: block;
   margin: auto;
-  margin-top: 80px;
+  margin-top: 70px;
 }
 
 .img-result{
