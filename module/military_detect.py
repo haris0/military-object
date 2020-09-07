@@ -138,9 +138,9 @@ class yolo_detect():
 		(H, W) = frame.shape[:2]
 		
 		# fourcc = cv2.VideoWriter_fourcc(*'MP4V')
-		fourcc = cv2.VideoWriter_fourcc(*"MJPG")
+		fourcc = cv2.VideoWriter_fourcc(*'vp80')
 
-		out_vid = cv2.VideoWriter('obj_detect4.avi', fourcc, 20.0, (W,H))
+		out_vid = cv2.VideoWriter('obj_detect4.webm', fourcc, 20.0, (W,H))
 
 		while cap.isOpened():
 			ret, frame = cap.read()

@@ -42,8 +42,13 @@
                         <img src="{{ url_for('.static', filename = 'detect_image/'+out_img) }}" 
                             class="img-result">
                         {% else %}
-                        <img src="{{ url_for('.static', filename = 'images/tank.png') }}" 
-                            class="placeholder-img">
+                        <!-- <img src="{{ url_for('.static', filename = 'images/tank.png') }}" 
+                            class="placeholder-img"> -->
+                        <video width="320" height="240" controls>
+                            <source src="{{ url_for('.static', filename = 'detect_image/obj_detect4.webm') }}" type="video/webm">
+                            Your browser does not support the video tag.
+                        </video>
+                        <!-- <img id="bg" src="{{ url_for('video_feed') }}"> -->
                         {% endif %}
                     </div>
                 </div>
