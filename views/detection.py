@@ -8,7 +8,7 @@ from werkzeug.utils import secure_filename
 import urllib.request
 
 UPLOAD_FOLDER = "./static/upload/"
-RESULT_FOLDER = ".static/detect_result"
+RESULT_FOLDER = "./static/detect_result/"
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['RESULT_FOLDER'] = RESULT_FOLDER
@@ -34,17 +34,20 @@ def cleaning_upload_dic(path):
         for f in filelist:
             os.remove(os.path.join(path, f))
 
-def predict_image_videe(url):
+def predict_image_video(url):
     filename = url.split('/')[-1]
     if allowed_file_image(filename):
-        path = download(url)
-        resize_img(path)
-        out_path = ym.predict_image(path)
-
+        resize_img(url)
+        out_path = ym.predict_image(url)
+        filetype = 'image'
     elif allowed_file_video(filename):
-        path = download(url)
+        print('Video')
+        out_path = ym.predict_video(url)
+        filetype = 'video'
+    else:
+        return redirect(request.url)
 
-    return out_path
+    return out_path, filetype
 
 def download(url):
     filename = url.split('/')[-1]
@@ -68,7 +71,8 @@ def upload_file():
         if "form-submit" in request.form:
             print('URL')
             url = request.form['url_link']
-            out_img = predict_image_videe(url)
+            path = download(url)
+            out_path, filetype = predict_image_video(path)
         else:
             print('Upload')
             if 'file' not in request.files:
@@ -79,15 +83,14 @@ def upload_file():
             if file.filename == '':
                 print('No selected file')
                 return redirect(request.url, error_msg='No File')
-            if file and allowed_file_image(file.filename):
+            if file :
                 print('Run Upload')
                 filename = secure_filename(file.filename)
                 path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 file.save(path)
-                resize_img(path)
-                out_img = ym.predict_image(path)
+                out_path, filetype = predict_image_video(path)
 
-        return render_template('detection.html', title='Home', out_img=out_img)
+        return render_template('detection.html', title='Home', out_path=out_path, filetype=filetype)
 
 # def gen(camera):
 #     while True:
@@ -100,3 +103,4 @@ def upload_file():
 # def video_feed():
 #     return Response(gen(VideoCamera()),
 #                     mimetype='multipart/x-mixed-replace; boundary=frame')
+# <img id="bg" src="{{ url_for('video_feed') }}">

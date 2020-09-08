@@ -38,17 +38,19 @@
                 </div>
                 <div class="panel panel-default">
                     <div class="panel-body result-panel">
-                        {% if out_img %}
-                        <img src="{{ url_for('.static', filename = 'detect_image/'+out_img) }}" 
-                            class="img-result">
+                        {% if out_path %}
+                            {% if filetype == 'image' %}
+                            <img src="{{ url_for('.static', filename = 'detect_result/'+out_path) }}" 
+                                class="img-result">
+                            {% else %}
+                            <video width="320" height="240" controls>
+                                <source src="{{ url_for('.static', filename = 'detect_result/'+out_path) }}" type="video/webm">
+                                Your browser does not support the video tag.
+                            </video>
+                            {% endif %}
                         {% else %}
-                        <!-- <img src="{{ url_for('.static', filename = 'images/tank.png') }}" 
-                            class="placeholder-img"> -->
-                        <video width="320" height="240" controls>
-                            <source src="{{ url_for('.static', filename = 'detect_image/obj_detect4.webm') }}" type="video/webm">
-                            Your browser does not support the video tag.
-                        </video>
-                        <!-- <img id="bg" src="{{ url_for('video_feed') }}"> -->
+                        <img src="{{ url_for('.static', filename = 'images/tank.png') }}" 
+                            class="placeholder-img">
                         {% endif %}
                     </div>
                 </div>

@@ -22,8 +22,13 @@ def randomword(length):
   return ''.join(random.choice(letters) for i in range(length))
 
 def get_predict_name(out_dir, filetype):
-  rand = randomword(7)
-  return f'{out_dir}result_output_{rand}.{filetype}'
+	rand = randomword(7)
+	if filetype == 'jpg':
+		data = 'image'
+	else:
+		data = 'video'
+
+	return f'{out_dir}{data}_output_{rand}.{filetype}'
 
 class yolo_detect():
 	def __init__(self, out_dir):
@@ -42,7 +47,7 @@ class yolo_detect():
 		print("[INFO] loading YOLO from disk...")
 		net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
 		net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-		net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+		net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
 		
 		return net
 	
@@ -137,18 +142,15 @@ class yolo_detect():
 		_, frame = cap.read()
 		(H, W) = frame.shape[:2]
 		
-		# fourcc = cv2.VideoWriter_fourcc(*'MP4V')
-		fourcc = cv2.VideoWriter_fourcc(*'vp80')
+		fourcc = cv2.VideoWriter_fourcc(*'VP90')
 
-		out_vid = cv2.VideoWriter('obj_detect4.webm', fourcc, 20.0, (W,H))
+		filename = get_predict_name(self.out_dir, 'webm')
+		out_vid = cv2.VideoWriter(filename, fourcc, 20.0, (W,H))
 
 		while cap.isOpened():
 			ret, frame = cap.read()
 			if not ret:
-				print('Video file finished.')
 				break
-
-			# total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 	 		
 			Outputs = self.detect_object(frame, layer_name)
 			boxes, confidences, label = self.get_boxes(Outputs, frame)
@@ -163,3 +165,7 @@ class yolo_detect():
 		
 		cap.release()
 		out_vid.release()
+		
+		outfile_name = os.path.basename(filename)
+		print('Video file finished.')
+		return outfile_name
