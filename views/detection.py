@@ -6,6 +6,8 @@ from module.military_detect import yolo_detect, resize_img
 import os
 from werkzeug.utils import secure_filename
 import urllib.request
+import tldextract
+import pytube
 
 UPLOAD_FOLDER = "./static/upload/"
 RESULT_FOLDER = "./static/detect_result/"
@@ -34,15 +36,15 @@ def cleaning_upload_dic(path):
         for f in filelist:
             os.remove(os.path.join(path, f))
 
-def predict_image_video(url):
-    filename = url.split('/')[-1]
+def predict_image_video(path):
+    filename = path.split('/')[-1]
     if allowed_file_image(filename):
-        resize_img(url)
-        out_path = ym.predict_image(url)
+        resize_img(path)
+        out_path = ym.predict_image(path)
         filetype = 'image'
     elif allowed_file_video(filename):
         print('Video')
-        out_path = ym.predict_video(url)
+        out_path = ym.predict_video(path)
         filetype = 'video'
     else:
         return redirect(request.url)
@@ -50,9 +52,22 @@ def predict_image_video(url):
     return out_path, filetype
 
 def download(url):
-    filename = url.split('/')[-1]
-    path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    urllib.request.urlretrieve(url, path)
+    ext = tldextract.extract(url)
+    if ext.domain == 'youtube':
+        print('Youtube')
+        path = download_yt(url)
+    else:
+        filename = url.split('/')[-1]
+        path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        urllib.request.urlretrieve(url, path)
+
+    return path
+
+def download_yt(url):
+    youtube = pytube.YouTube(url)
+    video = youtube.streams.first()
+    path = video.download(app.config['UPLOAD_FOLDER'])
+    
     return path
 
 @app.route('/')
