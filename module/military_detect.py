@@ -169,3 +169,31 @@ class yolo_detect():
 		outfile_name = os.path.basename(filename)
 		print('Video file finished.')
 		return outfile_name
+	
+	def detect_stream(self, vid_path):
+		cap = cv2.VideoCapture(vid_path)
+		layer_name = self.get_layer_name()
+		while True:
+				ret, frame = cap.read()
+				if not ret:
+						break
+
+				frame=cv2.resize(frame,None,fx=0.7,fy=0.7,
+												interpolation=cv2.INTER_AREA)
+				
+				Outputs = self.detect_object(frame, layer_name)
+				boxes, confidences, label = self.get_boxes(Outputs, frame)
+				predict = {
+						'boxes' : boxes,
+						'conf'	: confidences,
+						'label'	: label
+				}
+				result = self.draw_box(frame, predict)
+												
+				ret, jpeg = cv2.imencode('.jpg', result)
+				frame = jpeg.tobytes()
+
+				yield (b'--frame\r\n'
+						b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+
+		cap.release()

@@ -9,16 +9,16 @@ import urllib.request
 import tldextract
 import pytube
 
-UPLOAD_FOLDER = "./static/upload/"
+UPLOAD_IMG = "./static/upload_img/"
+UPLOAD_VID = "./static/upload_vid/"
 RESULT_FOLDER = "./static/detect_result/"
 
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['UPLOAD_IMG'] = UPLOAD_IMG
+app.config['UPLOAD_VID'] = UPLOAD_VID
 app.config['RESULT_FOLDER'] = RESULT_FOLDER
 
 IMAGE_ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 VIDEO_ALLOWED_EXTENSIONS = {'mp4', 'avi', '3gp'}
-
-ym = yolo_detect(app.config['RESULT_FOLDER'])
 
 def allowed_file_image(filename):
     return '.' in filename and \
@@ -36,16 +36,24 @@ def cleaning_upload_dic(path):
         for f in filelist:
             os.remove(os.path.join(path, f))
 
-def predict_image_video(path):
+def file_type(path):
     filename = path.split('/')[-1]
     if allowed_file_image(filename):
-        resize_img(path)
-        out_path = ym.predict_image(path)
         filetype = 'image'
     elif allowed_file_video(filename):
-        print('Video')
-        out_path = ym.predict_video(path)
         filetype = 'video'
+    else:
+        filetype = 'invalid'
+    return filetype
+
+def predict_image_video(path):
+    filetype = file_type(path)
+    if filetype == 'image':
+        resize_img(path)
+        model1 = yolo_detect(app.config['RESULT_FOLDER'])
+        out_path = model1.predict_image(path)
+    elif filetype == 'video':
+        out_path = path
     else:
         return redirect(request.url)
 
@@ -54,11 +62,13 @@ def predict_image_video(path):
 def download(url):
     ext = tldextract.extract(url)
     if ext.domain == 'youtube':
+        cleaning_upload_dic(app.config['UPLOAD_VID'])
         print('Youtube')
         path = download_yt(url)
     else:
+        cleaning_upload_dic(app.config['UPLOAD_IMG'])
         filename = url.split('/')[-1]
-        path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        path = os.path.join(app.config['UPLOAD_IMG'], filename)
         urllib.request.urlretrieve(url, path)
 
     return path
@@ -66,8 +76,20 @@ def download(url):
 def download_yt(url):
     youtube = pytube.YouTube(url)
     video = youtube.streams.first()
-    path = video.download(app.config['UPLOAD_FOLDER'])
+    path = video.download(app.config['UPLOAD_VID'])
     
+    return path
+
+def save_upload(file):
+    filename = secure_filename(file.filename)
+    if allowed_file_image(filename):
+        cleaning_upload_dic(app.config['UPLOAD_IMG'])
+        path = os.path.join(app.config['UPLOAD_IMG'], filename)
+    elif allowed_file_video(filename):
+        cleaning_upload_dic(app.config['UPLOAD_VID'])
+        path = os.path.join(app.config['UPLOAD_VID'], filename)
+    file.save(path)
+
     return path
 
 @app.route('/')
@@ -80,7 +102,6 @@ def detection():
 
 @app.route('/detection', methods=['GET', 'POST'])
 def upload_file():
-    cleaning_upload_dic(app.config['UPLOAD_FOLDER'])
     cleaning_upload_dic(app.config['RESULT_FOLDER'])
     if request.method == 'POST':
         if "form-submit" in request.form:
@@ -100,22 +121,20 @@ def upload_file():
                 return redirect(request.url, error_msg='No File')
             if file :
                 print('Run Upload')
-                filename = secure_filename(file.filename)
-                path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                file.save(path)
+                path = save_upload(file)
                 out_path, filetype = predict_image_video(path)
 
         return render_template('detection.html', title='Home', out_path=out_path, filetype=filetype)
 
-# def gen(camera):
-#     while True:
-#         #get camera frame
-#         frame = camera.get_frame()
-#         yield (b'--frame\r\n'
-#                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+# def gen():
+    # while True:
+    #     #get camera frame
+    #     frame = camera.get_frame()
+    #     yield (b'--frame\r\n'
+    #            b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
-# @app.route('/video_feed')
-# def video_feed():
-#     return Response(gen(VideoCamera()),
-#                     mimetype='multipart/x-mixed-replace; boundary=frame')
-# <img id="bg" src="{{ url_for('video_feed') }}">
+@app.route('/video_feed')
+def video_feed():
+    vid_path = request.args.get('out_path')
+    model2 = yolo_detect(app.config['RESULT_FOLDER'])
+    return Response(model2.detect_stream(vid_path),mimetype='multipart/x-mixed-replace; boundary=frame')
