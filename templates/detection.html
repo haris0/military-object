@@ -43,7 +43,7 @@
                                 <source src="{{ url_for('.static', filename = 'detect_result/'+out_path) }}" type="video/webm">
                                 Your browser does not support the video tag.
                             </video> -->
-                            <img id="bg" src="{{ url_for('video_feed', out_path=out_path) }}">
+                            <img id="bg" style="height: 250px;" src="{{ url_for('video_feed', out_path=out_path) }}">
                             {% endif %}
                         {% else %}
                         <img src="{{ url_for('.static', filename = 'images/tank.png') }}" 
