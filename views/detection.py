@@ -107,18 +107,21 @@ def upload_file():
         if "form-submit" in request.form:
             print('URL')
             url = request.form['url_link']
+            if url == '':
+                print('kosong')
+                return render_template('detection.html', error_msg='Isi URL terlebih dahulu!!')
             path = download(url)
             out_path, filetype = predict_image_video(path)
         else:
             print('Upload')
             if 'file' not in request.files:
                 print('No file part')
-                return redirect(request.url, error_msg='No File')
+                return render_template('detection.html', error_msg='No File')
             file = request.files['file']
             print(file)
             if file.filename == '':
                 print('No selected file')
-                return redirect(request.url, error_msg='No File')
+                return render_template('detection.html', error_msg='No File')
             if file :
                 print('Run Upload')
                 path = save_upload(file)

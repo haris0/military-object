@@ -7,6 +7,14 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-10 col-md-offset-2">
+                {% if error_msg %}
+                <div class="alert alert-danger alert-dismissible alert-margin" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    {{error_msg}}
+                </div>
+                {% endif %}
                 <div class="panel panel-default margin">
                     <form id="form" method=post enctype=multipart/form-data>
                     <div class="panel-body">
@@ -32,8 +40,8 @@
                     </div>
                     </form>
                 </div>
-                <div class="panel panel-default">
-                    <div class="panel-body result-panel">
+                <div class="panel panel-default result-panel">
+                    <div class="panel-body result-card">
                         {% if out_path %}
                             {% if filetype == 'image' %}
                             <img src="{{ url_for('.static', filename = 'detect_result/'+out_path) }}" 
