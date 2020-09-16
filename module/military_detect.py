@@ -134,42 +134,6 @@ class yolo_detect():
 		print('Image file finished.')
 		return outfile_name
 	
-	def predict_video(self, video_path):
-		
-		layer_name = self.get_layer_name()
-		cap = cv2.VideoCapture(video_path)  # use 0 for webcam   
-
-		_, frame = cap.read()
-		(H, W) = frame.shape[:2]
-		
-		fourcc = cv2.VideoWriter_fourcc(*'VP90')
-
-		filename = get_predict_name(self.out_dir, 'webm')
-		out_vid = cv2.VideoWriter(filename, fourcc, 20.0, (W,H))
-
-		while cap.isOpened():
-			ret, frame = cap.read()
-			if not ret:
-				break
-	 		
-			Outputs = self.detect_object(frame, layer_name)
-			boxes, confidences, label = self.get_boxes(Outputs, frame)
-			predict = {
-					'boxes' : boxes,
-					'conf'	: confidences,
-					'label'	: label
-			}
-			result = self.draw_box(frame, predict)
-
-			out_vid.write(result)
-		
-		cap.release()
-		out_vid.release()
-		
-		outfile_name = os.path.basename(filename)
-		print('Video file finished.')
-		return outfile_name
-	
 	def detect_stream(self, vid_path):
 		cap = cv2.VideoCapture(vid_path)
 		layer_name = self.get_layer_name()
