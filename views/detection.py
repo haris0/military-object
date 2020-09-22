@@ -5,7 +5,7 @@ from module.military_detect import yolo_detect, resize_img
 # from module.camera import VideoCamera
 import os
 from werkzeug.utils import secure_filename
-import urllib.request
+import requests
 import tldextract
 import pytube
 
@@ -69,7 +69,15 @@ def download(url):
         cleaning_upload_dic(app.config['UPLOAD_IMG'])
         filename = url.split('/')[-1]
         path = os.path.join(app.config['UPLOAD_IMG'], filename)
-        urllib.request.urlretrieve(url, path)
+        headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2)',
+                   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                   'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
+                   'Accept-Encoding': 'none',
+                   'Accept-Language': 'en-US,en;q=0.8',
+                   'Connection': 'keep-alive'}
+        r = requests.get(url, stream=True, headers=headers)
+        with open(path, "wb") as file:
+            file.write(r.content)
 
     return path
 
@@ -96,15 +104,15 @@ def save_upload(file):
 def root():
     return redirect(url_for('detection'))
 
-@app.route('/detection')
+@app.route('/object_detection')
 def detection():
-    return render_template('detection.html')
+    return render_template('detection.html', title='Home')
 
-@app.route('/detection', methods=['GET', 'POST'])
+@app.route('/object_detection', methods=['GET', 'POST'])
 def upload_file():
     cleaning_upload_dic(app.config['RESULT_FOLDER'])
     if request.method == 'POST':
-        if "form-submit" in request.form:
+        if "url-button" in request.form:
             print('URL')
             url = request.form['url_link']
             if url == '':
@@ -112,6 +120,9 @@ def upload_file():
                 return render_template('detection.html', error_msg='Isi URL terlebih dahulu!!')
             path = download(url)
             out_path, filetype = predict_image_video(path)
+        elif "cam-button" in request.form:
+            out_path = '0'
+            filetype = 'video'
         else:
             print('Upload')
             if 'file' not in request.files:
@@ -126,18 +137,13 @@ def upload_file():
                 print('Run Upload')
                 path = save_upload(file)
                 out_path, filetype = predict_image_video(path)
-
+        print('cam', out_path, filetype)
         return render_template('detection.html', title='Home', out_path=out_path, filetype=filetype)
-
-# def gen():
-    # while True:
-    #     #get camera frame
-    #     frame = camera.get_frame()
-    #     yield (b'--frame\r\n'
-    #            b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
 @app.route('/video_feed')
 def video_feed():
     vid_path = request.args.get('out_path')
+    if vid_path == '0':
+        vid_path = int('vid_path')
     model2 = yolo_detect(app.config['RESULT_FOLDER'])
     return Response(model2.detect_stream(vid_path),mimetype='multipart/x-mixed-replace; boundary=frame')
