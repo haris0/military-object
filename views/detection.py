@@ -2,7 +2,6 @@ import sys
 from app import app
 from flask import render_template, redirect, url_for, flash, request, Response
 from module.military_detect import yolo_detect, resize_img
-# from module.camera import VideoCamera
 import os
 from werkzeug.utils import secure_filename
 import requests
@@ -29,6 +28,8 @@ def allowed_file_video(filename):
         filename.rsplit('.', 1)[1].lower() in VIDEO_ALLOWED_EXTENSIONS
 
 def cleaning_upload_dic(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
     if not os.listdir(path):
         print('Folder Empty')
     else:
@@ -121,8 +122,15 @@ def upload_file():
             path = download(url)
             out_path, filetype = predict_image_video(path)
         elif "cam-button" in request.form:
-            out_path = '0'
             filetype = 'video'
+            cam_name = request.form['cam_name']
+            if cam_name == '0':
+                out_path = '0'
+            elif cam_name == '1':
+                out_path = 'http://cctv-dishub.sukoharjokab.go.id/zm/cgi-bin/nph-zms?mode=jpeg&monitor=1&scale=100&maxfps=15&buffer=1000&user=user&pass=user'
+            else :
+                out_path = 'http://cctv-dishub.sukoharjokab.go.id/zm/cgi-bin/nph-zms?mode=jpeg&monitor=8&scale=100&maxfps=15&buffer=1000&user=user&pass=user'
+            print('out_path', out_path)
         else:
             print('Upload')
             if 'file' not in request.files:
@@ -144,6 +152,6 @@ def upload_file():
 def video_feed():
     vid_path = request.args.get('out_path')
     if vid_path == '0':
-        vid_path = int('vid_path')
+        vid_path = int(vid_path)
     model2 = yolo_detect(app.config['RESULT_FOLDER'])
     return Response(model2.detect_stream(vid_path),mimetype='multipart/x-mixed-replace; boundary=frame')
