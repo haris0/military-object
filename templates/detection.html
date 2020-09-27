@@ -50,9 +50,15 @@
                                     <option value="1">CCTV Proliman 1 Sukoharjo</option>
                                     <option value="2">CCTV Utara Pom Bensin Bulakrejo</option>
                                 </select>
-                                <br>
-                                <br>
-                                <br>
+                                <p style="margin-top: 5px; margin-bottom: 0px;">Select Mode</p>
+                                <div style="padding: 7px;">
+                                    <label class="radio-inline">
+                                        <input type="radio" name="optradio" checked value="">Military Detection
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" name="optradio" value="">Object Detection
+                                    </label>
+                                </div>
                                 <button type="submit" name="cam-button" class="btn  btn-default pull-right"
                                     style="margin-top: 10px;">Use Camera</button>
                             </div>
@@ -70,7 +76,7 @@
                             <img id="bg" style="height: 250px;" src="{{ url_for('video_feed', out_path=out_path) }}">
                             {% endif %}
                         {% else %}
-                        <img src="{{ url_for('.static', filename = 'images/tank.png') }}" 
+                        <img src="{{ url_for('.static', filename = 'images/no_image.png') }}" 
                             class="placeholder-img">
                         {% endif %}
                     </div>
