@@ -52,13 +52,15 @@ def predict_image_video(path):
     if filetype == 'image':
         resize_img(path)
         model1 = yolo_detect(app.config['RESULT_FOLDER'])
-        out_path = model1.predict_image(path)
+        out_path = model1.detect_image(path)
+        out_name = "From Image File"
     elif filetype == 'video':
         out_path = path
+        out_name = "From Video File"
     else:
         return redirect(request.url)
 
-    return out_path, filetype
+    return out_path, out_name, filetype
 
 def download(url):
     ext = tldextract.extract(url)
@@ -120,16 +122,19 @@ def upload_file():
                 print('kosong')
                 return render_template('detection.html', error_msg='Isi URL terlebih dahulu!!')
             path = download(url)
-            out_path, filetype = predict_image_video(path)
+            out_path, out_name, filetype = predict_image_video(path)
         elif "cam-button" in request.form:
             filetype = 'video'
-            cam_name = request.form['cam_name']
-            if cam_name == '0':
-                out_path = '0'
-            elif cam_name == '1':
-                out_path = 'http://cctv-dishub.sukoharjokab.go.id/zm/cgi-bin/nph-zms?mode=jpeg&monitor=1&scale=100&maxfps=15&buffer=1000&user=user&pass=user'
-            else :
-                out_path = 'http://cctv-dishub.sukoharjokab.go.id/zm/cgi-bin/nph-zms?mode=jpeg&monitor=8&scale=100&maxfps=15&buffer=1000&user=user&pass=user'
+            cam_id = request.form['cam_id']
+            out_name = ''
+            if cam_id == '0':
+                out_name = 'From Web Camera'
+            elif cam_id == '1':
+                out_name = 'From CCTV Proliman 1 Sukoharjo'
+            else:
+                out_name = 'From CCTV Utara Pom Bensin Bulakrejo'
+            print(out_name)
+            out_path = cam_id
             print('out_path', out_path)
         else:
             print('Upload')
@@ -144,14 +149,18 @@ def upload_file():
             if file :
                 print('Run Upload')
                 path = save_upload(file)
-                out_path, filetype = predict_image_video(path)
+                out_path, out_name, filetype = predict_image_video(path)
         print('cam', out_path, filetype)
-        return render_template('detection.html', title='Home', out_path=out_path, filetype=filetype)
+        return render_template('detection.html', title='Home', out_path=out_path, out_name=out_name, filetype=filetype)
 
 @app.route('/video_feed')
 def video_feed():
     vid_path = request.args.get('out_path')
     if vid_path == '0':
         vid_path = int(vid_path)
+    elif vid_path == '1':
+        vid_path = 'http://cctv-dishub.sukoharjokab.go.id/zm/cgi-bin/nph-zms?mode=jpeg&monitor=1&scale=100&maxfps=15&buffer=1000&user=user&pass=user'
+    elif vid_path == '2' :
+        vid_path = 'http://cctv-dishub.sukoharjokab.go.id/zm/cgi-bin/nph-zms?mode=jpeg&monitor=8&scale=100&maxfps=15&buffer=1000&user=user&pass=user'
     model2 = yolo_detect(app.config['RESULT_FOLDER'])
     return Response(model2.detect_stream(vid_path),mimetype='multipart/x-mixed-replace; boundary=frame')

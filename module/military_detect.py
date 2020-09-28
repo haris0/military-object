@@ -88,35 +88,21 @@ class yolo_detect():
 					label.append(self.Object[classID])
 		return boxes, confidences, label
 
-	def draw_box(self, image, predict):
+	def draw_box(self, image, predict, colors):
 		idxs = cv2.dnn.NMSBoxes(predict['boxes'], predict['conf'], 0.5, 0.3)
-		color_dict = {
-					'Helikopter Militer' : (103, 58, 183),
-					'Jet Militer' : (3, 169, 244),
-					'Tank Militer' : (0, 188, 212),
-					'Mobil Militer' : (229, 28, 35),
-					'Kapal Militer' : (255, 152, 0),
-					'Pistol' : (233, 30, 99),
-					'Senapan' : (0, 150, 136),
-					'Pisau Militer' : (139, 195, 74),
-					'Granat' : (205, 220, 57),
-					'Tentara' : (158, 158, 158)
-			}
 
 		if len(idxs) > 0:
 			for i in idxs.flatten():
 				(x, y) = (predict['boxes'][i][0], predict['boxes'][i][1])
 				(w, h) = (predict['boxes'][i][2], predict['boxes'][i][3])
-			
-				text_color = (255, 255, 255)
-				color = color_dict[predict['label'][i]]
+		
+				color = colors[i]
 				image = cv2.rectangle(image, (x, y), (x + w, y + h), color, 2)
-				image = cv2.rectangle(image, (x, y+15), (x + 155, y), color, -1)
 				text = predict['label'][i] + "({:.2f})".format(predict['conf'][i])
-				image = cv2.putText(image, text, (x+2, y+10), cv2.FONT_HERSHEY_PLAIN, 0.8, text_color, 1)
+				image = cv2.putText(image, text, (x+2, y+10), cv2.FONT_HERSHEY_PLAIN, 0.8, color, 1)
 		return image
 
-	def predict_image(self, img_path):
+	def detect_image(self, img_path):
 		layer_name = self.get_layer_name()
 		image = cv2.imread(img_path)
 		Outputs = self.detect_object(image, layer_name)
@@ -126,7 +112,8 @@ class yolo_detect():
 				'conf'	: confidences,
 				'label'	: label
 		}
-		result = self.draw_box(image, predict)
+		colors = np.random.uniform(0, 255, size=(len(self.Object), 3))
+		result = self.draw_box(image, predict, colors)
 		filename = get_predict_name(self.out_dir, 'jpg')
 		cv2.imwrite(filename, result, [cv2.IMWRITE_JPEG_QUALITY, 100])
 
@@ -137,6 +124,7 @@ class yolo_detect():
 	def detect_stream(self, vid_path):
 		cap = cv2.VideoCapture(vid_path)
 		layer_name = self.get_layer_name()
+		colors = np.random.uniform(0, 255, size=(len(self.Object), 3))
 		while True:
 				ret, frame = cap.read()
 				if not ret:
@@ -152,7 +140,7 @@ class yolo_detect():
 						'conf'	: confidences,
 						'label'	: label
 				}
-				result = self.draw_box(frame, predict)
+				result = self.draw_box(frame, predict, colors)
 												
 				ret, jpeg = cv2.imencode('.jpg', result)
 				frame = jpeg.tobytes()

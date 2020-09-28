@@ -45,7 +45,7 @@
                                     <b style="font-size:medium;">Detect From Camera / CCTV</b>
                                 </div>
                                 <p style="margin-top: -5px; margin-bottom: 0px;">Select Camera</p>
-                                <select class="form-control" name="cam_name">
+                                <select class="form-control" name="cam_id">
                                     <option value="0" selected>Web Camera</option>
                                     <option value="1">CCTV Proliman 1 Sukoharjo</option>
                                     <option value="2">CCTV Utara Pom Bensin Bulakrejo</option>
@@ -69,11 +69,14 @@
                 <div class="panel panel-default result-panel">
                     <div class="panel-body result-card">
                         {% if out_path %}
+                            <div style="text-align: left;">
+                                <b>{{out_name}}</b>
+                            </div>
                             {% if filetype == 'image' %}
                             <img src="{{ url_for('.static', filename = 'detect_result/'+out_path) }}" 
                                 class="img-result">
                             {% else %}
-                            <img id="bg" style="height: 250px;" src="{{ url_for('video_feed', out_path=out_path) }}">
+                            <img id="bg" style="height: 250px;" src="{{ url_for('video_feed', out_path=out_path) }}" class="img-result">
                             {% endif %}
                         {% else %}
                         <img src="{{ url_for('.static', filename = 'images/no_image.png') }}" 
