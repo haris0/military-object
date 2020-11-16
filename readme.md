@@ -18,6 +18,7 @@ Following this step to run the app :
   ```
   pip install -r requirements.txt
   ```
+- Download weight in [here](https://drive.google.com/file/d/1MHneKZV0iZgwuBzgnDHm0PhxOrf_JvhV/view), and place in module/object_weight
 - And App is ready to running, hit this command
   ```
   flask run
