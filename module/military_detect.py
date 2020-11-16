@@ -31,19 +31,20 @@ def get_predict_name(out_dir, filetype):
 	return f'{out_dir}{data}_output_{rand}.{filetype}'
 
 class yolo_detect():
-	def __init__(self, out_dir):
+	def __init__(self, out_dir, model_path):
+		self.out_dir = out_dir
+		self.model_path = model_path
 		self.net = self.load_model()
 		self.Object = self.load_label()
-		self.out_dir = out_dir
 
 	def load_label(self):
-		labelsPath = './module/obj.names'
+		labelsPath = self.model_path['name']
 		Object = open(labelsPath).read().strip().split("\n")
 		return Object
 
 	def load_model(self):
-		weightsPath = './module/yolo-tiny-obj.weights'
-		configPath = './module/yolo-tiny-obj.cfg'
+		weightsPath = self.model_path['weight']
+		configPath = self.model_path['config']
 		print("[INFO] loading YOLO from disk...")
 		net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
 		net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)

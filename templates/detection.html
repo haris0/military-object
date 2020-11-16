@@ -46,17 +46,17 @@
                                 </div>
                                 <p style="margin-top: -5px; margin-bottom: 0px;">Select Camera</p>
                                 <select class="form-control" name="cam_id">
-                                    <option value="0" selected>Web Camera</option>
-                                    <option value="1">CCTV Proliman 1 Sukoharjo</option>
-                                    <option value="2">CCTV Utara Pom Bensin Bulakrejo</option>
+                                    {% for cam in cam_list %}
+                                        <option value="{{cam[0]}}">{{cam[1]}}</option>
+                                    {% endfor %}
                                 </select>
                                 <p style="margin-top: 5px; margin-bottom: 0px;">Select Mode</p>
                                 <div style="padding: 7px;">
                                     <label class="radio-inline">
-                                        <input type="radio" name="optradio" checked value="">Military Detection
+                                        <input type="radio" name="mode_type" checked value="object">Object Detection
                                     </label>
                                     <label class="radio-inline">
-                                        <input type="radio" name="optradio" value="">Object Detection
+                                        <input type="radio" name="mode_type" value="military">Military Detection
                                     </label>
                                 </div>
                                 <button type="submit" name="cam-button" class="btn  btn-default pull-right"
@@ -76,7 +76,7 @@
                             <img src="{{ url_for('.static', filename = 'detect_result/'+out_path) }}" 
                                 class="img-result">
                             {% else %}
-                            <img id="bg" style="height: 250px;" src="{{ url_for('video_feed', out_path=out_path) }}" class="img-result">
+                            <img id="bg" style="height: 350px;" src="{{ url_for('video_feed', out_path=out_path, mode=mode) }}" class="vid-result">
                             {% endif %}
                         {% else %}
                         <img src="{{ url_for('.static', filename = 'images/no_image.png') }}" 
